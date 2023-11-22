@@ -8,6 +8,7 @@ export default class Voting extends Component {
     candidates: [],
     votes: {},
     showResults: false,
+    winners: [],
   };
 
   handleVote = (id) => {
@@ -37,9 +38,22 @@ export default class Voting extends Component {
       });
   }
 
+  findWinners = () => {
+    const { votes, candidates } = this.state;
+    const maxVotes = Math.max(...Object.values(votes));
+
+    const winners = candidates.filter((candidate) => votes[candidate.id] === maxVotes);
+    return winners;
+  };
+
   handleShowResults = () => {
+    const winners = this.findWinners();
+    const totalVotes = Object.values(this.state.votes).reduce((acc, curr) => acc + curr, 0);
+    const uniqueVotes = [...new Set(Object.values(this.state.votes))];
+
     this.setState({
       showResults: true,
+      winners: totalVotes === 0 || uniqueVotes.length === 1 ? [] : winners,
     });
   };
 
@@ -63,7 +77,26 @@ export default class Voting extends Component {
             </div>
           ))}
 
-          <button className="show-results-btn" onClick={this.handleShowResults}>Show Results</button>
+          {this.state.showResults && (
+            <div>
+              {this.state.winners.length > 0 ? (
+                <div>
+                  <p>Winners:</p>
+                  <ul>
+                    {this.state.winners.map((winner) => (
+                      <li key={winner.id}>{winner.title}</li>
+                    ))}
+                  </ul>
+                </div>
+              ) : (
+                <p>No winner (Tie)</p>
+              )}
+            </div>
+          )}
+
+          <button className="show-results-btn" onClick={this.handleShowResults}>
+            Show Results
+          </button>
         </div>
       </div>
     );
